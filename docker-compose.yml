@@ -1,0 +1,37 @@
+version "1.0"
+
+services:
+  faas-gateway"
+    build:
+      context: ./faas-gateway
+      dockerfile:
+    ports:
+      - "80:80"
+    volumes:
+      - "var/run/
+      -
+    env-file:
+    logging:
+      dirver: "json-file"
+      max-size: "200k"
+      max-file: "10"
+
+
+  operations:
+    build:
+      context: ./mathoperations
+      dockerfile:
+    lables:
+      - "faas.name=operations"
+      - "faas.port=8080"
+    volumes:
+      -
+
+  ping:
+    build:
+      context: ./ping
+    lables:
+      - "faas.name=ping"
+      - "faas.port=8080"
+    volumes:
+      -
