@@ -1,4 +1,4 @@
-package gatewayfd
+package main
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/jasonlvhit/gocron"
 	"golang.org/x/net/context"
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -15,34 +16,57 @@ import (
 
 //const ping = "http://localhost:8080/ping"
 //const operation = "http://localhost:8080/operations"
-const default_function = "http://loclahost:8080/default"
+const default_function = "http://loclahost:8080"
 
-var routerMap map[string]ContainerData
+var (
+	routerMap map[string]ContainerData
+	hostProxy map[string]*httputil.ReverseProxy
+)
 
 type ContainerData struct {
-	lables string
+	labels string
 	status string
 	ip     string
 	port   string
 }
 
 func handleRequestAndRedirect(writer http.ResponseWriter, request *http.Request) {
-	var urll string
-	switch getFunction(request) {
-	case "ping":
-		urll = "http://" + routerMap["ping"].ip + routerMap["ping"].port
-	case "operation":
-		urll = "http://" + routerMap["ping"].ip + routerMap["operation"].port
-	default:
-		urll = default_function
+	var host string
+	functionName:=getFunction(request)
+	if function,ok:=routerMap[functionName];ok{
+		host = "http://" + function.ip + function.port
+	}else{
+		host=default_function
 	}
-	targetUrl, _ := url.Parse(urll)
-	proxy := httputil.NewSingleHostReverseProxy(targetUrl)
-	//request.URL.Host = targetUrl.Host
-	//request.URL.Scheme = targetUrl.Scheme
+	//switch getFunction(request) {
+	//case "ping":
+	//	host = "http://" + routerMap["ping"].ip + routerMap["ping"].port
+	//case "operation":
+	//	host = "http://" + routerMap["ping"].ip + routerMap["operation"].port
+	//default:
+	//	host = default_function
+	//}
+	if fn, ok :=hostProxy[host]; ok{
+		fn.ServeHTTP(writer,request)
+		return
+	}
+	proxy:=ServeHttp(host,writer,request)
+	hostProxy[host]=proxy
+}
+
+func ServeHttp(target string, writer http.ResponseWriter, request *http.Request) *httputil.ReverseProxy {
+	targetUrl, err := url.Parse(target)
+	if err!=nil{
+		log.Println("url fail")
+		return nil
+	}
+	proxy:=httputil.NewSingleHostReverseProxy(targetUrl)
+	request.URL.Host = targetUrl.Host
+	request.URL.Scheme = targetUrl.Scheme
 	request.Header.Set("X-Forwarded-Host", request.Header.Get("Host"))
-	//request.Host = targetUrl.Host
-	proxy.ServeHTTP(writer, request)
+	request.Host = targetUrl.Host
+	proxy.ServeHTTP(writer,request)
+	return proxy
 }
 
 func pollingStatusOfContainers() {
@@ -54,9 +78,9 @@ func GetContainerStatus() {
 	var routerTable map[string]ContainerData
 	filterArgs := filters.NewArgs()
 	filterArgs.Add("label", "faas.name")
-	filterArgs.Add("status","running")
+	filterArgs.Add("status", "running")
 	ctx := context.Background();
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation()) //TODO
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation()) //TODO define host version
 	if err != nil {
 		panic(err.Error())
 	}
@@ -86,11 +110,12 @@ func getFunction(request *http.Request) string {
 	return request.URL.Path[len("/gateway/"):]
 }
 
-func defaultFunction(writer http.ResponseWriter,request *http.Request){
+func defaultFunction(writer http.ResponseWriter, request *http.Request) {
 	fmt.Println("No service, please correct function name")
 }
 
 func main() {
+	pollingStatusOfContainers()
 	http.HandleFunc("/gateway/", handleRequestAndRedirect)
-	http.HandleFunc("/default",defaultFunction)
+	http.HandleFunc("/default", defaultFunction)
 }
