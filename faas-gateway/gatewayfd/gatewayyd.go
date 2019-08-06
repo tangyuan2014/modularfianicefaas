@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
@@ -18,10 +17,10 @@ import (
 //const operation = "http://localhost:8080/operations"
 const default_function = "http://loclahost:8080"
 
-var (
-	routerMap map[string]ContainerData
-	hostProxy map[string]*httputil.ReverseProxy
-)
+
+   var routerMap=make(map[string]ContainerData)
+   var hostProxy=make(map[string]*httputil.ReverseProxy)
+
 
 type ContainerData struct {
 	labels string
@@ -55,6 +54,7 @@ func handleRequestAndRedirect(writer http.ResponseWriter, request *http.Request)
 }
 
 func ServeHttp(target string, writer http.ResponseWriter, request *http.Request) *httputil.ReverseProxy {
+	log.Println(target)
 	targetUrl, err := url.Parse(target)
 	if err!=nil{
 		log.Println("url fail")
@@ -72,6 +72,7 @@ func ServeHttp(target string, writer http.ResponseWriter, request *http.Request)
 func pollingStatusOfContainers() {
 	scheduler := gocron.NewScheduler()
 	scheduler.Every(10).Seconds().Do(GetContainerStatus)
+	<- scheduler.Start()
 }
 
 func GetContainerStatus() {
@@ -95,9 +96,13 @@ func GetContainerStatus() {
 	}
 	for _, container := range containers {
 		labels := container.Labels["faas.name"]
+		log.Println(labels)
 		status := container.State
+		log.Println(status)
 		ipAddress := container.NetworkSettings.Networks["bridge"].IPAddress
+		log.Println(ipAddress)
 		port := strconv.FormatUint(uint64(container.Ports[0].PrivatePort), 10)
+		log.Println(port)
 		container1 := ContainerData{labels, status, ipAddress, port}
 		routerTable[labels] = container1
 	}
@@ -111,11 +116,13 @@ func getFunction(request *http.Request) string {
 }
 
 func defaultFunction(writer http.ResponseWriter, request *http.Request) {
-	fmt.Println("No service, please correct function name")
+	writer.Write([]byte("No service, please correct function name"))
 }
 
 func main() {
 	pollingStatusOfContainers()
 	http.HandleFunc("/gateway/", handleRequestAndRedirect)
 	http.HandleFunc("/default", defaultFunction)
+	http.ListenAndServe(":80", nil)
 }
+
