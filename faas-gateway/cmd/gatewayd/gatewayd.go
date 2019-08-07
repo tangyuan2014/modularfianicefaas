@@ -1,26 +1,25 @@
 package main
 
 import (
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/filters"
-	"github.com/docker/docker/client"
-	"github.com/jasonlvhit/gocron"
-	"golang.org/x/net/context"
 	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"strconv"
+
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/client"
+	"github.com/jasonlvhit/gocron"
+	"golang.org/x/net/context"
 )
 
 //const ping = "http://localhost:8080/ping"
 //const operation = "http://localhost:8080/operations"
 const default_function = "http://loclahost:8080"
 
-
-   var routerMap=make(map[string]ContainerData)
-   var hostProxy=make(map[string]*httputil.ReverseProxy)
-
+var routerMap = make(map[string]ContainerData)
+var hostProxy = make(map[string]*httputil.ReverseProxy)
 
 type ContainerData struct {
 	labels string
@@ -31,11 +30,13 @@ type ContainerData struct {
 
 func handleRequestAndRedirect(writer http.ResponseWriter, request *http.Request) {
 	var host string
-	functionName:=getFunction(request)
-	if function,ok:=routerMap[functionName];ok{
-		host = "http://" + function.ip +":"+ function.port
-	}else{
-		host=default_function
+	functionName := getFunction(request)
+	log.Println(functionName)
+	if function, ok := routerMap[functionName]; ok {
+		host = "http://" + function.ip + ":" + function.port
+		log.Println("host" + host)
+	} else {
+		host = default_function
 	}
 	//switch getFunction(request) {
 	//case "ping":
@@ -45,49 +46,49 @@ func handleRequestAndRedirect(writer http.ResponseWriter, request *http.Request)
 	//default:
 	//	host = default_function
 	//}
-	if fn, ok :=hostProxy[host]; ok{
-		fn.ServeHTTP(writer,request)
+	if fn, ok := hostProxy[host]; ok {
+		fn.ServeHTTP(writer, request)
 		return
 	}
-	proxy:=ServeHttp(host,writer,request)
-	hostProxy[host]=proxy
+	proxy := ServeHttp(host, writer, request)
+	hostProxy[host] = proxy
 }
 
 func ServeHttp(target string, writer http.ResponseWriter, request *http.Request) *httputil.ReverseProxy {
 	log.Println(target)
 	targetUrl, err := url.Parse(target)
-	if err!=nil{
+	if err != nil {
 		log.Println("url fail")
 		return nil
 	}
-	proxy:=httputil.NewSingleHostReverseProxy(targetUrl)
+	proxy := httputil.NewSingleHostReverseProxy(targetUrl)
 	request.URL.Host = targetUrl.Host
 	request.URL.Scheme = targetUrl.Scheme
 	request.Header.Set("X-Forwarded-Host", request.Header.Get("Host"))
 	request.Host = targetUrl.Host
-	proxy.ServeHTTP(writer,request)
+	proxy.ServeHTTP(writer, request)
 	return proxy
 }
 
 func pollingStatusOfContainers() {
 	scheduler := gocron.NewScheduler()
 	scheduler.Every(10).Seconds().Do(GetContainerStatus)
-	<- scheduler.Start()
+	<-scheduler.Start()
 }
 
 func GetContainerStatus() {
-	var routerTable map[string]ContainerData
+	var routerTable = make(map[string]ContainerData)
 	filterArgs := filters.NewArgs()
 	filterArgs.Add("label", "faas.name")
 	filterArgs.Add("status", "running")
-	ctx := context.Background();
+	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation()) //TODO define host version
 	if err != nil {
 		panic(err.Error())
 	}
 	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{
 		All:     true,
-		Filters: filterArgs,})
+		Filters: filterArgs})
 	if err != nil {
 		panic(err.Error())
 	}
@@ -96,14 +97,16 @@ func GetContainerStatus() {
 	}
 	for _, container := range containers {
 		labels := container.Labels["faas.name"]
-		log.Println(labels)
 		status := container.State
-		log.Println(status)
-		ipAddress := container.NetworkSettings.Networks["bridge"].IPAddress
-		log.Println(ipAddress)
+		//	log.Println(status)
+		netWorks := container.NetworkSettings.Networks
+		hostConfig := container.HostConfig.NetworkMode
+		ipAddress := netWorks[hostConfig].IPAddress
+		//	log.Println(ipAddress)
 		port := strconv.FormatUint(uint64(container.Ports[0].PrivatePort), 10)
-		log.Println(port)
+		//	log.Println(port)
 		container1 := ContainerData{labels, status, ipAddress, port}
+		//	log.Println(container1)
 		routerTable[labels] = container1
 	}
 	routerMap = routerTable
@@ -112,6 +115,7 @@ func GetContainerStatus() {
 //func parseRequestBody(request http.Request){
 
 func getFunction(request *http.Request) string {
+
 	return request.URL.Path[len("/gateway/"):]
 }
 
@@ -125,4 +129,3 @@ func main() {
 	http.HandleFunc("/default", defaultFunction)
 	http.ListenAndServe(":80", nil)
 }
-

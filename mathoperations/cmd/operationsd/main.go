@@ -2,7 +2,8 @@ package main
 
 import (
 	"net/http"
-	"modularfianicefaas/mathoperations/Operations"
+
+	"github.com/tangyuan2014/modularfianicefaas/mathoperations/Operations"
 )
 
 func operation(writer http.ResponseWriter, request *http.Request) {
@@ -22,7 +23,7 @@ func operation(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	res := ""
-	switch operator	[0] {
+	switch operator[0] {
 	case "addition":
 		res = Operations.Addition(operand1[0], operand2[0])
 	case "factorial":
@@ -36,6 +37,6 @@ func operation(writer http.ResponseWriter, request *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/Operations/", operation)
+	http.HandleFunc("/", operation)
 	http.ListenAndServe(":8080", nil)
 }

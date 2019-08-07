@@ -2,8 +2,9 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/sparrc/go-ping"
 	"net/http"
+
+	"github.com/sparrc/go-ping"
 )
 
 func Ping(writer http.ResponseWriter, request *http.Request) {
@@ -11,25 +12,25 @@ func Ping(writer http.ResponseWriter, request *http.Request) {
 	if !ok || len(keys[0]) < 1 {
 		panic("url param is missing")
 	}
-	url := 	//pinger.SetPrivileged(true)
+	url := //pinger.SetPrivileged(true)
 		keys[0]
 	pinger, err := ping.NewPinger(url)
 	if err != nil {
 		panic(err)
 	}
- 	pinger.Count = 3
- 	pinger.Run()                 // blocks until finished
- 	stats := pinger.Statistics() // get send/receive/rtt stats
+	pinger.Count = 3
+	pinger.Run()                 // blocks until finished
+	stats := pinger.Statistics() // get send/receive/rtt stats
 	js, err := json.Marshal(stats)
 
 	if err != nil {
 		writer.Write([]byte(err.Error()))
 		return
 	}
- 	writer.Write(js)
+	writer.Write(js)
 	return
 }
 func main() {
-	http.HandleFunc("/ping/", Ping)
+	http.HandleFunc("/", Ping)
 	http.ListenAndServe(":8080", nil)
 }
