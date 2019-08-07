@@ -33,7 +33,7 @@ func handleRequestAndRedirect(writer http.ResponseWriter, request *http.Request)
 	var host string
 	functionName:=getFunction(request)
 	if function,ok:=routerMap[functionName];ok{
-		host = "http://" + function.ip + function.port
+		host = "http://" + function.ip +":"+ function.port
 	}else{
 		host=default_function
 	}
@@ -120,7 +120,7 @@ func defaultFunction(writer http.ResponseWriter, request *http.Request) {
 }
 
 func main() {
-	pollingStatusOfContainers()
+	go pollingStatusOfContainers()
 	http.HandleFunc("/gateway/", handleRequestAndRedirect)
 	http.HandleFunc("/default", defaultFunction)
 	http.ListenAndServe(":80", nil)
