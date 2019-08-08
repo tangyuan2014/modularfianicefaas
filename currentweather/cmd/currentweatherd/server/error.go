@@ -2,20 +2,21 @@ package server
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 )
 
 type errorResponse struct {
-	Code    string
+	Code    int
 	Message string
 }
 
-func notFoundError(writer http.ResponseWriter, request *http.Request) {
-	writer.WriteHeader(http.StatusNotFound)
-	err := errorResponse{
-		Code:    "404",
-		Message: "service not found ",
-	}
-	response, _ := json.Marshal(err)
+func logAndWriteError(writer http.ResponseWriter, statusCode int, err error) {
+	log.Println(err.Error())
+	writer.WriteHeader(statusCode)
+	response, _ := json.Marshal(errorResponse{
+		Code:    statusCode,
+		Message: err.Error(),
+	})
 	writer.Write(response)
 }

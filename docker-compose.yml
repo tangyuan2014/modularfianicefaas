@@ -16,13 +16,11 @@ services:
       - "faas.port=8080"
     volumes:
       - ./mathoperations:/go/src/github.com/tangyuan2014/modularfianicefaas/mathoperations
-  ping:
+  currentweather:
     build:
-      context: ./ping
-    sysctls:
-      net.ipv4.ping_group_range: "0 2147483647"
+      context: ./currentweather
     labels:
-      - "faas.name=ping"
+      - "faas.name=currentweather"
       - "faas.port=8080"
     volumes:
-      - ./ping:/go/src/github.com/tangyuan2014/modularfianicefaas/ping
+      - ./currentweather:/go/src/github.com/tangyuan2014/modularfianicefaas/currentweather
