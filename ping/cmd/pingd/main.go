@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/tangyuan2014/modularfianicefaas/ping/cmd/pingd/server"
 	"net/http"
+
+	"github.com/tangyuan2014/modularfianicefaas/ping/cmd/pingd/server"
 )
 
 func main() {

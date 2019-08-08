@@ -38,7 +38,7 @@ func validateAndGetInput(request *http.Request, paramKey string) (string, error)
 		return "", errors.New("Please provide one and only one city")
 	}
 
-	return param[0], nil;
+	return param[0], nil
 }
 
 func Health(writer http.ResponseWriter, request *http.Request) {

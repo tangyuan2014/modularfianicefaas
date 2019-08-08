@@ -8,10 +8,10 @@ import (
 
 func generateProxy(target string) (*httputil.ReverseProxy, error) {
 	log.Println(target)
-	targetUrl, err := url.Parse(target)
+	targetURL, err := url.Parse(target)
 	if err != nil {
 		return nil, err
 	}
-	proxy := httputil.NewSingleHostReverseProxy(targetUrl)
+	proxy := httputil.NewSingleHostReverseProxy(targetURL)
 	return proxy, nil
 }
