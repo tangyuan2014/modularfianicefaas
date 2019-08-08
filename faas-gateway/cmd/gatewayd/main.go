@@ -3,20 +3,20 @@ package main
 import (
 	"github.com/jasonlvhit/gocron"
 	"github.com/tangyuan2014/modularfianicefaas/faas-gateway/cmd/gatewayd/server"
+	"log"
 	"net/http"
 )
 
-func pollingStatusOfService() {
+func pollServiceStatus() {
 	s := gocron.NewScheduler()
-	s.Every(3).Seconds().Do(server.GetContainerStatus)
+	s.Every(5).Seconds().Do(server.GetContainerStatus)
 	<-s.Start()
 }
 
 func main() {
-	go pollingStatusOfService()
+	go pollServiceStatus()
 	http.HandleFunc(server.Prefix, server.HandleRequestAndRedirect)
-	err := http.ListenAndServe(":80", nil)
-	if err != nil {
-		panic("") //TODO
-	}
+	http.HandleFunc("/health/", server.Health)
+	http.ListenAndServe(":80", nil)
+	log.Println("Gateway Service started!")
 }

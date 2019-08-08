@@ -24,16 +24,17 @@ func GetContainerStatus() {
 	filterArgs.Add("label", "faas.name")
 	filterArgs.Add("status", "running")
 	ctx := context.Background()
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation()) //TODO define host version
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
-		log.Println(err.Error())
+		log.Println("Failed to generate docker client with error: " + err.Error())
 		return
 	}
 	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{
 		All:     true,
 		Filters: filterArgs})
+
 	if err != nil {
-		log.Println(err.Error())
+		log.Println("Failed to get container data with error: " + err.Error())
 		return
 	}
 	if containers != nil {
