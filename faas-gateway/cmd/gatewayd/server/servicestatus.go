@@ -1,12 +1,13 @@
 package server
 
 import (
+	"log"
+	"strconv"
+
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"golang.org/x/net/context"
-	"log"
-	"strconv"
 )
 
 var ServiceMap = make(map[string]ContainerData)
@@ -14,7 +15,7 @@ var ServiceMap = make(map[string]ContainerData)
 type ContainerData struct {
 	Labels    string
 	Status    string
-	IpAddress string
+	IPAddress string
 	Port      string
 }
 
@@ -43,9 +44,9 @@ func GetContainerStatus() {
 			status := container.State
 			netWorks := container.NetworkSettings.Networks
 			hostConfig := container.HostConfig.NetworkMode
-			ipAddress := netWorks[hostConfig].IPAddress
+			IPAddress := netWorks[hostConfig].IPAddress
 			port := strconv.FormatUint(uint64(container.Ports[0].PrivatePort), 10)
-			container1 := ContainerData{labelFaasName, status, ipAddress, port}
+			container1 := ContainerData{labelFaasName, status, IPAddress, port}
 			serviceTable[labelFaasName] = container1
 		}
 	}
