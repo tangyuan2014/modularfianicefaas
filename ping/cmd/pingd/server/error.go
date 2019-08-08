@@ -18,5 +18,4 @@ func notFoundError(writer http.ResponseWriter) {
 	}
 	response, _ := json.Marshal(err)
 	writer.Write(response)
-
 }

@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/tangyuan2014/modularfianicefaas/mathoperations/cmd/operationsd/server"
 	"log"
 	"net/http"
+
+	"github.com/tangyuan2014/modularfianicefaas/mathoperations/cmd/operationsd/server"
 )
 
 func main() {

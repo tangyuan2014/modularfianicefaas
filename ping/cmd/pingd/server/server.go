@@ -2,9 +2,10 @@ package server
 
 import (
 	"encoding/json"
-	"github.com/sparrc/go-ping"
 	"log"
 	"net/http"
+
+	"github.com/sparrc/go-ping"
 )
 
 func Ping(writer http.ResponseWriter, request *http.Request) {
