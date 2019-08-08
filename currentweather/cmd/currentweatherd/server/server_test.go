@@ -9,12 +9,13 @@ import (
 )
 
 func TestGetCurrentWeather(t *testing.T) {
-	req,err:=http.NewRequest("GET","/?cityname=London",nil)
-	if err!=nil{
-		log.Fatal(err.Error())}
-	resp:=httptest.NewRecorder()
-	GetCurrentWeather(resp,req)
-	expectresp:=`{
+	req, err := http.NewRequest("GET", "/?cityname=London", nil)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	resp := httptest.NewRecorder()
+	GetCurrentWeather(resp, req)
+	expectresp := `{
     "coord": {
         "lon": -0.13,
         "lat": 51.51
@@ -56,15 +57,18 @@ func TestGetCurrentWeather(t *testing.T) {
     "name": "London",
     "cod": 200
 }`
-	assert.Equal(t,http.StatusOK,resp.Code)
-	assert.Equal(t,expectresp,resp.Body.String())
+	assert.Equal(t, http.StatusOK, resp.Code)
+	assert.Equal(t, expectresp, resp.Body.String())
 }
 
 func TestGetCurrentWeather2(t *testing.T) {
-	req,err:=http.NewRequest("GET","/?cityname=London",nil)
-	if err!=nil{
-		log.Fatal(err.Error())}
-	resp:=httptest.NewRecorder()
-	GetCurrentWeather(resp,req)
-expectresp:
+	req, err := http.NewRequest("GET", "/?ityname=London", nil)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	resp := httptest.NewRecorder()
+	GetCurrentWeather(resp, req)
+	expectresp :=""
+	assert.Equal(t, http.StatusBadRequest, resp.Code)
+	assert.Equal(t, expectresp, resp.Body.String())
 }
