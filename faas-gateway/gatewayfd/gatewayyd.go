@@ -115,14 +115,16 @@ func getFunction(request *http.Request) string {
 	return request.URL.Path[len("/gateway/"):]
 }
 
-func defaultFunction(writer http.ResponseWriter, request *http.Request) {
-	writer.Write([]byte("No service, please correct function name"))
+func defaultFunction(writer http.ResponseWriter, request *http.Request) error{
+	_,err:=writer.Write([]byte("No service, please correct function name"))
+	return err
 }
 
 func main() {
 	go pollingStatusOfContainers()
 	http.HandleFunc("/gateway/", handleRequestAndRedirect)
 	http.HandleFunc("/default", defaultFunction)
-	http.ListenAndServe(":80", nil)
+	err:=http.ListenAndServe(":80", nil)
+
 }
 
