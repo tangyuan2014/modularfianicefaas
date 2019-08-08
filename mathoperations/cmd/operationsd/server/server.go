@@ -1,61 +1,46 @@
 package server
 
 import (
+	"errors"
 	"github.com/tangyuan2014/modularfianicefaas/mathoperations/cmd/operationsd/operations"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 const (
-	operator = "operator"
-	operand1 = "operand1"
-	operand2 = "operand2"
+	number = "number"
 )
 
+func Health(writer http.ResponseWriter, request *http.Request) {
+	writer.Write([]byte("service is up"))
+}
+
 func Operation(writer http.ResponseWriter, request *http.Request) {
-	res := ""
-	operator:=requestValid(writer,request,operator)
-	switch operator[0] {
-	case "addition":
-		operand1:=requestValid(writer,request,operand1)
-		operand2:=requestValid(writer,request,operand2)
-		resadd, err := operations.Addition(operand1[0], operand2[0])
-		if err != nil {
-			notFoundError(writer, request)
-			return
-		}
-		res=resadd
-	case "factorial":
-		operand1:=requestValid(writer,request,operand1)//TODO operand2 condition
-		resfa,err:= operations.Factorial(operand1[0])
-		if err != nil {
-			notFoundError(writer, request)
-			return
-		}
-		res=resfa
-	case "multiplication":
-		operand1:=requestValid(writer,request,operand1)
-		operand2:=requestValid(writer,request,operand2)
-		resmul,err:= operations.Multi(operand1[0], operand2[0])
-		if err != nil {
-			notFoundError(writer, request)
-			return
-		}
-		res=resmul
-	default:
-		log.Println() //TODO
-		notFoundError(writer, request)
+	number, err := validateAndGetInput(request, number)
+	if err != nil {
+		writeError(writer, http.StatusBadRequest, err)
+		log.Println("Input validation failed with error: " + err.Error())
 		return
 	}
+	res := operations.Factorial(number)
 	writer.Write([]byte("result is " + res))
 }
 
-func requestValid(writer http.ResponseWriter, request *http.Request, r string) []string{
+func validateAndGetInput(request *http.Request, r string) (int64, error) {
 	num, ok := request.URL.Query()[r]
-	if !ok || len(num[0]) < 1 {
-		log.Println() //TODO
-		notFoundError(writer, request)
-		return nil
+	if !ok {
+		return 0, errors.New("Failed to parse " + r)
+	} else if len(num) != 1 {
+		return 0, errors.New("Please provide one and only one integer")
 	}
-	return num
+
+	if digit, err := strconv.ParseInt(num[0], 10, 64); err != nil {
+		return 0, errors.New("Please provide a integer ")
+	} else {
+		if digit < 1 {
+			return 0, errors.New("Please provide a positive integer ")
+		}
+		return digit, nil
+	}
 }

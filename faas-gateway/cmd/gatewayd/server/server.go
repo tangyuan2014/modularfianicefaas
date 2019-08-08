@@ -1,40 +1,42 @@
 package server
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"net/http/httputil"
-	"strings"
 )
 
-const Prefix  = "/gateway/"
+const Prefix = "/gateway/"
+
 var HostProxy = make(map[string]*httputil.ReverseProxy)
 
 func HandleRequestAndRedirect(writer http.ResponseWriter, request *http.Request) {
-	var host string
-	if strings.Index(request.URL.Path, Prefix) != 0 {
-		log.Println()//TODO
-		NotFoundError(writer,request)
+	var serviceHost string
+
+	functionPath := request.URL.Path[len(Prefix):]
+	if functionService, ok := ServiceMap[functionPath]; ok {
+		serviceHost = "http://" + functionService.IpAddress + ":" + functionService.Port
+		log.Println("Will redirect " + request.URL.Path + " to " + functionService.Labels + "[" + serviceHost + "]")
+	} else {
+		logAndWriteError(writer, http.StatusNotFound, errors.New("Failed to find the service with path: "+functionPath))
 		return
 	}
-	functionName:=request.URL.Path[len(Prefix):]
-	if function, ok := ServiceMap[functionName]; ok {
-		host = "http://" + function.IpAddress + ":" + function.Port
+
+	if proxy, ok := HostProxy[serviceHost]; ok {
+		proxy.ServeHTTP(writer, request)
 	} else {
-		log.Println()//TODO
-		NotFoundError(writer,request)
-		return
-	}
-	log.Println(host)
-	if fn, ok := HostProxy[host]; ok {
-		fn.ServeHTTP(writer, request)
-	} else {
-		proxy, err := ServeHttp(host, writer, request)
+		proxy, err := generateProxy(serviceHost)
 		if err != nil {
-			log.Println()//TODO
-			NotFoundError(writer,request)
+			logAndWriteError(writer, http.StatusInternalServerError, errors.New("Failed to parse service host: "+serviceHost+" with error: "+err.Error()))
 			return
 		}
-		HostProxy[host] = proxy
+		HostProxy[serviceHost] = proxy
+		log.Println("Create new proxy with service host " + serviceHost + " and put into cache")
+		proxy.ServeHTTP(writer, request)
 	}
+}
+
+func Health(writer http.ResponseWriter, request *http.Request) {
+	writer.Write([]byte("service is up"))
 }

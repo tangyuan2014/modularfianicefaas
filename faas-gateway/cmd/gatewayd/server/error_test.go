@@ -7,8 +7,7 @@ import (
 )
 
 func TestNotFoundError(t *testing.T) {
-	writer:=httptest.NewRecorder()
-	request:=httptest.NewRequest("GET","/hello",nil)
-	NotFoundError(writer,request)
-	assert.Equal(t,"{\"code\":\"404\",\"message\":\"service not found\"}",writer.Body.String())
+	writer := httptest.NewRecorder()
+	NotFoundError(writer)
+	assert.Equal(t, "{\"code\":\"404\",\"message\":\"service not found\"}", writer.Body.String())
 }

@@ -17,7 +17,7 @@ func Ping(writer http.ResponseWriter, request *http.Request) {
 	pinger, err := ping.NewPinger(url)
 	if err != nil {
 		log.Println(err.Error())
-		notFoundError(writer,request)
+		notFoundError(writer)
 		return
 	}
 	pinger.Count = 3
@@ -25,8 +25,8 @@ func Ping(writer http.ResponseWriter, request *http.Request) {
 	stats := pinger.Statistics() // get send/receive/rtt stats
 	js, err := json.Marshal(stats)
 	if err != nil {
-		log.Println("")//TODO
-		notFoundError(writer,request)
+		log.Println("") //TODO
+		notFoundError(writer)
 		return
 	}
 	writer.Write(js)

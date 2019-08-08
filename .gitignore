@@ -1,4 +1,4 @@
-/faas-gateway/vendor
-/mathoperations/vendor
-/ping/vendor
+**/vendor
+**/bin
+.idea
 .vscode
