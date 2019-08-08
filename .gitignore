@@ -1,3 +1,4 @@
 /faas-gateway/vendor
 /mathoperations/vendor
 /ping/vendor
+.vscode
