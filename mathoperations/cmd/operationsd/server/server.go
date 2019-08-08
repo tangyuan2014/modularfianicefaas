@@ -14,47 +14,47 @@ const (
 
 func Operation(writer http.ResponseWriter, request *http.Request) {
 	res := ""
-	operator:=requestValid(writer,request,operator)
+	operator := requestValid(writer, request, operator)
 	switch operator[0] {
 	case "addition":
-		operand1:=requestValid(writer,request,operand1)
-		operand2:=requestValid(writer,request,operand2)
+		operand1 := requestValid(writer, request, operand1)
+		operand2 := requestValid(writer, request, operand2)
 		resadd, err := operations.Addition(operand1[0], operand2[0])
 		if err != nil {
-			notFoundError(writer, request)
+			notFoundError(writer)
 			return
 		}
-		res=resadd
+		res = resadd
 	case "factorial":
-		operand1:=requestValid(writer,request,operand1)//TODO operand2 condition
-		resfa,err:= operations.Factorial(operand1[0])
+		operand1 := requestValid(writer, request, operand1) //TODO operand2 condition
+		resfa, err := operations.Factorial(operand1[0])
 		if err != nil {
-			notFoundError(writer, request)
+			notFoundError(writer)
 			return
 		}
-		res=resfa
+		res = resfa
 	case "multiplication":
-		operand1:=requestValid(writer,request,operand1)
-		operand2:=requestValid(writer,request,operand2)
-		resmul,err:= operations.Multi(operand1[0], operand2[0])
+		operand1 := requestValid(writer, request, operand1)
+		operand2 := requestValid(writer, request, operand2)
+		resmul, err := operations.Multi(operand1[0], operand2[0])
 		if err != nil {
-			notFoundError(writer, request)
+			notFoundError(writer)
 			return
 		}
-		res=resmul
+		res = resmul
 	default:
 		log.Println() //TODO
-		notFoundError(writer, request)
+		notFoundError(writer)
 		return
 	}
 	writer.Write([]byte("result is " + res))
 }
 
-func requestValid(writer http.ResponseWriter, request *http.Request, r string) []string{
+func requestValid(writer http.ResponseWriter, request *http.Request, r string) []string {
 	num, ok := request.URL.Query()[r]
 	if !ok || len(num[0]) < 1 {
 		log.Println() //TODO
-		notFoundError(writer, request)
+		notFoundError(writer)
 		return nil
 	}
 	return num

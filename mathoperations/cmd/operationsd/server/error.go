@@ -10,13 +10,12 @@ type errorResponse struct {
 	Message string
 }
 
-func notFoundError(writer http.ResponseWriter, request *http.Request) {
+func notFoundError(writer http.ResponseWriter) {
 	writer.WriteHeader(http.StatusNotFound)
-	err:=errorResponse{
+	err := errorResponse{
 		Code:    "404",
 		Message: "service not found ",
 	}
-	response,_:=json.Marshal(err)
+	response, _ := json.Marshal(err)
 	writer.Write(response)
-
 }
