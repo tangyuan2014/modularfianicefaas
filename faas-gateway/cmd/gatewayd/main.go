@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func pollingStatusOfService(){
+func pollingStatusOfService() {
 	s := gocron.NewScheduler()
 	s.Every(3).Seconds().Do(server.GetContainerStatus)
 	<-s.Start()
@@ -15,9 +15,8 @@ func pollingStatusOfService(){
 func main() {
 	go pollingStatusOfService()
 	http.HandleFunc(server.Prefix, server.HandleRequestAndRedirect)
-	err:=http.ListenAndServe(":80", nil)
-	if err!=nil{
-		panic("")//TODO
+	err := http.ListenAndServe(":80", nil)
+	if err != nil {
+		panic("") //TODO
 	}
-
 }
