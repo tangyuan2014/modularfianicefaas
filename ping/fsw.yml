@@ -5,7 +5,7 @@ triggers:
       - "**/*.go"
     env:
       DEBUG: "1"
-    cmd: go run /go/src/github.com/tangyuan2014/modularfianicefaas/ping/cmd/pingd/ping.go
+    cmd: go run /go/src/github.com/tangyuan2014/modularfianicefaas/ping/cmd/pingd/main.go
     shell: true
     delay: 100ms
     stop_timeout: 500ms

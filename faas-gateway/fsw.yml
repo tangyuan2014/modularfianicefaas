@@ -5,7 +5,7 @@ triggers:
       - "**/*.go"
     env:
       DEBUG: "1"
-    cmd: go run /go/src/github.com/tangyuan2014/modularfianicefaas/faas-gateway/cmd/gatewayd/gatewayd.go
+    cmd: go run /go/src/github.com/tangyuan2014/modularfianicefaas/faas-gateway/cmd/gatewayd/main.go
     shell: true
     delay: 100ms
     stop_timeout: 500ms

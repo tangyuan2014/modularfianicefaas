@@ -1,7 +1,6 @@
-package servicehandling
+package server
 
 import (
-	"github.com/tangyuan2014/modularfianicefaas/faas-gateway/cmd/gatewayd/errorhandling"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -15,7 +14,7 @@ func HandleRequestAndRedirect(writer http.ResponseWriter, request *http.Request)
 	var host string
 	if strings.Index(request.URL.Path, Prefix) != 0 {
 		log.Println()//TODO
-		errorhandling.NotFoundError(writer,request)
+		NotFoundError(writer,request)
 		return
 	}
 	functionName:=request.URL.Path[len(Prefix):]
@@ -23,7 +22,7 @@ func HandleRequestAndRedirect(writer http.ResponseWriter, request *http.Request)
 		host = "http://" + function.IpAddress + ":" + function.Port
 	} else {
 		log.Println()//TODO
-		errorhandling.NotFoundError(writer,request)
+		NotFoundError(writer,request)
 		return
 	}
 	log.Println(host)
@@ -33,7 +32,7 @@ func HandleRequestAndRedirect(writer http.ResponseWriter, request *http.Request)
 		proxy, err := ServeHttp(host, writer, request)
 		if err != nil {
 			log.Println()//TODO
-			errorhandling.NotFoundError(writer,request)
+			NotFoundError(writer,request)
 			return
 		}
 		HostProxy[host] = proxy

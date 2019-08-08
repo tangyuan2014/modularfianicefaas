@@ -1,4 +1,4 @@
-package errorhandling
+package server
 
 import (
 	"encoding/json"
@@ -21,12 +21,3 @@ func NotFoundError(writer http.ResponseWriter, request *http.Request) {
 	
 }
 
-func InternalError(writer http.ResponseWriter, request *http.Request) {
-	writer.WriteHeader(http.StatusInternalServerError)
-	err:=errorResponse{
-		Code:    "500",
-		Message: "internal error",
-	}
-	response,_:=json.Marshal(err)
-	writer.Write(response)
-}

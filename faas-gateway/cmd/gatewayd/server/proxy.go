@@ -1,4 +1,4 @@
-package servicehandling
+package server
 
 import (
 	"log"
