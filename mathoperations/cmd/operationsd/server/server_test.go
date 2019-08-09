@@ -25,7 +25,7 @@ func TestOperation2(t *testing.T) {
 		log.Fatal(err.Error())}
 	resp:=httptest.NewRecorder()
 	Operation(resp,req)
-	expectresp:="Please provide a positive integer "
+	expectresp:=`{"Code":400,"Message":"Please provide a integer "}`
 	assert.Equal(t,http.StatusBadRequest,resp.Code)
 	assert.Equal(t,expectresp,resp.Body.String())
 }

@@ -1,5 +1,7 @@
-package main
+package server
 
-func main() {
-	
+import "testing"
+
+func TestHandleRequestAndRedirect(t *testing.T) {
+
 }
